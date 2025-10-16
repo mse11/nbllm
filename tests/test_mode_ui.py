@@ -41,7 +41,7 @@ def test_mode_ui_picker():
         print(f"✓ Initial mode: {chat.current_mode}")
         
         # Test the mode command handler with mock choice
-        with patch('src.nbllm.ui.choice') as mock_choice:
+        with patch('nbllm.ui.choice') as mock_choice:
             # Test selecting a different mode
             mock_choice.return_value = "review"
             result = chat._handle_mode_command("")

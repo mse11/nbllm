@@ -43,18 +43,19 @@ def test_streaming_padding():
     print(repr(output))
     
     # Check if the output starts with the expected padding
-    expected_padding = "  "  # 2 spaces for LEFT_PADDING
-    
+    expected_padding = " " * ui.LEFT_PADDING
+
+    is_success = output.startswith(expected_padding)
     # The output should start with padding
-    if output.startswith(expected_padding):
-        print("✓ PASS: Output starts with proper padding")
-        return True
-    else:
-        print("✗ FAIL: Output does not start with proper padding")
-        print(f"Expected to start with: {repr(expected_padding)}")
-        print(f"Actually starts with: {repr(output[:10])}")
-        return False
+    if not is_success:
+        error_msg  = "\n"
+        error_msg += "✗ FAIL: Output does not start with proper padding\n"
+        error_msg += f"Expected to start with: {repr(expected_padding)}\n"
+        error_msg += f"Actually starts with  : {repr(output[:10])}"
+        assert is_success, error_msg
+
+    print("✓ PASS: Output starts with proper padding")
 
 if __name__ == "__main__":
-    success = test_streaming_padding()
-    sys.exit(0 if success else 1)
+    test_streaming_padding()
+    print("\n✅ All mode UI tests passed!")
