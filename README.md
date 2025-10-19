@@ -27,7 +27,7 @@ Basic installation:
 To preserve the namespace on pypi (as my hobby project) no pypi package exists. Use uv to solve installation process:
 
 ```bash
-uvx --with git+https://github.com/mse11/nbllm[browser] python apps/app.py
+uvx --with git+https://github.com/mse11/nbllm[marimo,browser] python apps/coding_agent__marimo_notebook.py
 ```
 
 Developer installation:

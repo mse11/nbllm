@@ -2,7 +2,9 @@
 
 import importlib.metadata
 
-from .__main__ import chat, Chat
+from .__main__ import chat
+from .chat import  Chat
+from .chat_config import LlmConfig, ModeConfig, ModesConfig
 
 # Get version dynamically from package metadata
 try:
@@ -10,4 +12,11 @@ try:
 except:
     __version__ = "unknown"
 
-__all__ = ["chat", "Chat", "__version__"]
+__all__ = [
+    "chat",
+    "Chat",
+    "LlmConfig",
+    "ModeConfig",
+    "ChatConfig",
+    "__version__"
+]

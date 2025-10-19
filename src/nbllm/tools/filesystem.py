@@ -21,7 +21,7 @@ class FileSystem(llm.Toolbox):
         """Helper to show what the LLM receives from tools"""
         ui.tool_debug(f"\n>>> Tool returning to LLM: {repr(value)}\n")
         return value
-        
+
     def _resolve_path(self, file_path: str) -> Path:
         if Path(file_path).is_absolute():
             return Path(file_path).resolve()
@@ -136,14 +136,18 @@ class FileSystem(llm.Toolbox):
             return self._debug_return(f"No changes needed in '{file_path}'")
 
 
-def FileTool(file_path: Optional[str] = None):
+def FileTool(file_path: Optional[str] = None, file_content : str = None):
     """Factory function to create a FileTool with file-specific docstring."""
     if file_path is None:
         file_path = ui.input("Enter the path to the file you want to edit: ")
     
     file_path_obj = Path(file_path).resolve()
     if not file_path_obj.exists():
-        raise FileNotFoundError(f"File does not exist: {file_path}")
+        if file_content is None:
+            raise FileNotFoundError(f"File does not exist: {file_path}")
+        else:
+            file_path_obj.parent.mkdir(parents=True, exist_ok=True)
+            file_path_obj.write_text(file_content)
     
     class _FileTool(llm.Toolbox):
         f"""Single file editing toolbox - focused on editing {file_path_obj.name}. This tool cannot be used to open or edit other files."""

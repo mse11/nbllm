@@ -48,9 +48,9 @@ dev = [
 browser = [
     "playwright>=1.40.0",
 ]
-#marimo = [
-#    "marimo>=0.1.3",
-#]
+marimo = [
+    "marimo>=0.1.3",
+]
 
 
 [project.scripts]
