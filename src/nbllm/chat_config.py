@@ -49,7 +49,7 @@ class ConfigMode:
 @dataclass
 class ConfigModes:
     """"""
-    initial_mode: Union[str, None] = None
+    current_mode: Union[str, None] = None
     modes_cfg: List[ConfigMode] = field(default_factory=list)
 
     def __post_init__(self):
@@ -58,13 +58,19 @@ class ConfigModes:
         if len(mode_names) != len(set(mode_names)):
             raise ValueError("Duplicate mode names detected")
 
-    def mode_tools_to_dict(self) -> dict[str, List[Any]]:
+    @property
+    def tools_by_mode(self) -> dict[str, List[Any]]:
         """Get tools for all modes as a dictionary"""
         return {m.mode: m.tools for m in self.modes_cfg}
 
-    def mode_switch_message_to_dict(self) -> dict[str, str]:
-        """Get tools for all modes as a dictionary"""
+    @property
+    def mode_switch_messages_by_mode(self) -> dict[str, str]:
+        """Get switch messages for all modes as a dictionary"""
         return {m.mode: m.mode_switch_message for m in self.modes_cfg}
 
+    @property
+    def all_modes(self) -> List[str]:
+        """Get all modes"""
+        return [m.mode for m in self.modes_cfg]
 
 

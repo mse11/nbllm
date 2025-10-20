@@ -1,6 +1,5 @@
 from typing import Optional, Callable
 import uuid
-import llm
 
 from rich.console import Console
 from rich.spinner import Spinner
@@ -11,6 +10,7 @@ from rich.text import Text
 from nbllm import config
 from nbllm import ui
 from nbllm.chat_config import ConfigLlm, ConfigModes
+from nbllm.chat_service import LlmService
 
 # Command result constants
 COMMAND_QUIT = "QUIT"
@@ -138,125 +138,33 @@ class Chat:
             first_message: Initial message to display
             show_banner: Whether to show banner
         """
+
         self.debug = debug
-        self.model_name = cfg_llm.model_id
-        self.system_prompt = cfg_llm.system_prompt
+
+        self.service = LlmService(cfg_llm=cfg_llm, cfg_modes=cfg_modes)
+
         self.slash_commands = slash_commands or {}
         self.history_callback = history_callback
         self.first_message = first_message
         self.show_banner = show_banner
-        self.current_mode = cfg_modes.initial_mode
-        self.mode_switch_messages = cfg_modes.mode_switch_message_to_dict()
-        self.conversation_history = []
-
-        tools = cfg_modes.mode_tools_to_dict()
-        self.mode_tools = tools
-        self.available_modes = list(tools.keys())
-
-        # Initialize model and conversation
-        self.model = None
-        self.conversation = None
-        self._initialize_model()
-
-    def _initialize_model(self):
-        """Initialize the LLM model and conversation."""
-        try:
-            self.model = llm.get_model(self.model_name)
-        except Exception as e:
-            ui.print(f"[red]Error loading model '{self.model_name}': {e}[/red]")
-            raise typer.Exit(1)
-
-        current_tools = self._get_current_tools()
-        self.conversation = self.model.conversation(tools=current_tools)
-
-    def _get_current_tools(self):
-        """Get tools for current mode."""
-        if self.current_mode is None:
-            return self.mode_tools.get("default", [])
-        return self.mode_tools.get(self.current_mode, [])
-
-    def _is_modes_enabled(self) -> bool:
-        """Check if modes are configured."""
-        return self.current_mode is not None
-
-    def get_available_modes(self) -> list:
-        """Return list of available modes."""
-        return self.available_modes.copy() if self._is_modes_enabled() else []
-
-    def switch_to_next_mode(self) -> str:
-        """Switch to the next mode in the list (for keyboard shortcut)."""
-        if not self._is_modes_enabled() or len(self.available_modes) <= 1:
-            return None
-
-        current_index = self.available_modes.index(self.current_mode)
-        next_index = (current_index + 1) % len(self.available_modes)
-        next_mode = self.available_modes[next_index]
-
-        # Save conversation history before switching
-        self.conversation_history = [msg.response_json for msg in self.conversation.responses]
-
-        # Switch mode silently (no UI feedback here, handled by input function)
-        old_mode = self.current_mode
-        self.current_mode = next_mode
-        self._initialize_model()
-
-        # Send mode switch message if configured
-        if next_mode in self.mode_switch_messages:
-            switch_message = self.mode_switch_messages[next_mode]
-            for _ in self.conversation.chain(switch_message, system=self.system_prompt):
-                pass  # Consume the response silently
-
-        # Replay conversation history
-        for msg in self.conversation_history:
-            if msg.get("role") == "user":
-                content = msg.get("content", [])
-                if content and isinstance(content, list) and content[0].get("type") == "text":
-                    text = content[0].get("text", "")
-                    if text:  # Only replay non-empty user messages
-                        for _ in self.conversation.chain(text, system=self.system_prompt):
-                            pass  # Consume responses silently
-
-        return next_mode
 
     def switch_mode(self, new_mode: str):
         """Switch to a different mode."""
-        if not self._is_modes_enabled():
+        if not self.service.modes_enabled:
             ui.print("[red]Modes are not configured for this session[/red]")
             return False
 
-        if new_mode not in self.available_modes:
+        if new_mode not in self.service.modes_all:
             ui.print(f"[red]Unknown mode: {new_mode}[/red]")
-            ui.print(f"[dim]Available modes: {', '.join(self.available_modes)}[/dim]")
+            ui.print(f"[dim]Available modes: {', '.join(self.service.modes_all)}[/dim]")
             return False
 
-        if new_mode == self.current_mode:
+        old_mode = self.service.mode_current
+        if new_mode == self.service.mode_current:
             ui.print(f"[dim]Already in {new_mode} mode[/dim]")
             return True
 
-        # Save conversation history
-        self.conversation_history = [msg.response_json for msg in self.conversation.responses]
-
-        # Switch mode and reinitialize
-        old_mode = self.current_mode
-        self.current_mode = new_mode
-        self._initialize_model()
-
-        # Send mode switch message if configured
-        if new_mode in self.mode_switch_messages:
-            switch_message = self.mode_switch_messages[new_mode]
-            # Send the switch message to establish new mode context
-            for _ in self.conversation.chain(switch_message, system=self.system_prompt):
-                pass  # Consume the response silently
-
-        # Replay conversation history
-        for msg in self.conversation_history:
-            if msg.get("role") == "user":
-                content = msg.get("content", [])
-                if content and isinstance(content, list) and content[0].get("type") == "text":
-                    text = content[0].get("text", "")
-                    if text:  # Only replay non-empty user messages
-                        for _ in self.conversation.chain(text, system=self.system_prompt):
-                            pass  # Consume responses silently
+        self.service.llm_exec_switch(next_mode=new_mode)
 
         ui.print(f"[green]Switched from {old_mode} to {new_mode} mode[/green]")
         ui.print("")
@@ -289,7 +197,7 @@ class Chat:
             while True:
                 # Define available commands for completion (builtin + user commands + mode commands)
                 builtin_commands = ["/quit", "/help", "/tools", "/debug"]
-                if self._is_modes_enabled():
+                if self.service.modes_enabled:
                     builtin_commands.extend(["/mode", "/modes"])
 
                 user_command_names = list(user_commands.keys())
@@ -298,21 +206,21 @@ class Chat:
                 # Show completion hint on first prompt
                 if not hasattr(self, '_shown_completion_hint'):
                     tip_text = "[dim]Tips: TAB for completions • @file.py for file paths • ↑/↓ for history • Ctrl+U to clear"
-                    if self._is_modes_enabled() and len(self.available_modes) > 1:
+                    if self.service.modes_enabled and len(self.service.modes_all) > 1:
                         tip_text += " • Shift+TAB to switch modes"
                     tip_text += "[/dim]"
                     ui.print(tip_text)
                     self._shown_completion_hint = True
 
                 # Create mode-aware prompt
-                if self._is_modes_enabled():
-                    prompt = f"[{self.current_mode}] > "
+                if self.service.modes_enabled:
+                    prompt = f"[{self.service.mode_current}] > "
                 else:
                     prompt = "> "
 
                 # Prepare mode switching for keyboard shortcut
-                mode_switcher = self.switch_to_next_mode if self._is_modes_enabled() else None
-                available_modes = self.get_available_modes() if self._is_modes_enabled() else None
+                mode_switcher = self.service.llm_exec_switch if self.service.modes_enabled else None
+                available_modes = self.service.modes_all if self.service.modes_enabled else None
 
                 out = ui.input(
                     prompt,
@@ -356,7 +264,7 @@ class Chat:
                         new_id = str(uuid.uuid4()).replace("-", "")[:24]
                         self.history_callback(
                             [{"id": f"msg_{new_id}", "role": "user", "content": [{"text": out, "type": "text"}]}])
-                    for chunk in self.conversation.chain(out, system=self.system_prompt):
+                    for chunk in self.service.llm_conversation.chain(out, system=self.service.system_prompt):
                         if not response_started:
                             # First chunk received, clear and stop the spinner so it disappears
                             try:
@@ -375,7 +283,7 @@ class Chat:
                     if response_started:
                         ui.end_streaming(ui.LEFT_PADDING)
                     ids = set([e["id"] for e in history])
-                    new_responses = [e for e in self.conversation.responses if e.response_json["id"] not in ids]
+                    new_responses = [e for e in self.service.llm_conversation.responses if e.response_json["id"] not in ids]
                     if self.history_callback:
                         self.history_callback([e.response_json for e in new_responses])
 
@@ -387,25 +295,26 @@ class Chat:
 
     def _dispatch_slash_command(self, command, args, user_commands):
         """Dispatch slash command to appropriate handler."""
+        conversation = self.service.llm_conversation
         if command == "/quit":
-            return handle_quit(), self.conversation
+            return handle_quit(), conversation
         elif command == "/help":
-            return self._handle_help(user_commands), self.conversation
+            return self._handle_help(user_commands), conversation
         elif command == "/tools":
-            return self._handle_tools(), self.conversation
+            return self._handle_tools(), conversation
         elif command == "/debug":
-            return toggle_debug(), self.conversation
+            return toggle_debug(), conversation
         elif command == "/mode":
-            return self._handle_mode_command(args), self.conversation
+            return self._handle_mode_command(args), conversation
         elif command == "/modes":
-            return self._handle_modes_command(), self.conversation
+            return self._handle_modes_command(), conversation
         elif command in user_commands:
-            return handle_user_command(command, user_commands[command]), self.conversation
+            return handle_user_command(command, user_commands[command]), conversation
         else:
             ui.print(f"[red]Unknown command: {command}[/red]")
             ui.print("[dim]Type /help for available commands[/dim]")
             ui.print("")
-            return COMMAND_HANDLED, self.conversation
+            return COMMAND_HANDLED, conversation
 
     def _handle_help(self, user_commands):
         """Handle /help command with mode awareness."""
@@ -415,10 +324,10 @@ class Chat:
         ui.print("  /tools  - Show available tools")
         ui.print("  /debug  - Toggle debug mode")
 
-        if self._is_modes_enabled():
+        if self.service.modes_enabled:
             ui.print("  /mode   - Switch mode interactively or /mode <mode_name>")
             ui.print("  /modes  - List available modes")
-            if len(self.available_modes) > 1:
+            if len(self.service.modes_all) > 1:
                 ui.print("  [dim]Shift+TAB - Quick switch to next mode[/dim]")
 
         if user_commands:
@@ -437,10 +346,10 @@ class Chat:
 
     def _handle_tools(self):
         """Handle /tools command with mode awareness."""
-        current_tools = self._get_current_tools()
+        current_tools = self.service.tools
 
-        if self._is_modes_enabled():
-            ui.print(f"[cyan]Available tools in {self.current_mode} mode:[/cyan]")
+        if self.service.modes_enabled:
+            ui.print(f"[cyan]Available tools in {self.service.mode_current} mode:[/cyan]")
         else:
             ui.print("[cyan]Available tools:[/cyan]")
 
@@ -455,7 +364,7 @@ class Chat:
 
     def _handle_mode_command(self, args=""):
         """Handle /mode command."""
-        if not self._is_modes_enabled():
+        if not self.service.modes_enabled:
             ui.print("[red]Modes are not configured for this session[/red]")
             ui.print("")
             return COMMAND_HANDLED
@@ -465,8 +374,8 @@ class Chat:
             try:
                 # Create choices with current mode indicator
                 choices = []
-                for mode in self.available_modes:
-                    if mode == self.current_mode:
+                for mode in self.service.modes_all:
+                    if mode == self.service.mode_current:
                         choices.append(f"{mode} (current)")
                     else:
                         choices.append(mode)
@@ -475,7 +384,7 @@ class Chat:
                 if selected:
                     # Extract mode name (remove " (current)" if present)
                     target_mode = selected.replace(" (current)", "")
-                    if target_mode != self.current_mode:
+                    if target_mode != self.service.mode_current:
                         self.switch_mode(target_mode)
                     else:
                         ui.print(f"[dim]Already in {target_mode} mode[/dim]")
@@ -492,14 +401,14 @@ class Chat:
 
     def _handle_modes_command(self):
         """Handle /modes command."""
-        if not self._is_modes_enabled():
+        if not self.service.modes_enabled:
             ui.print("[red]Modes are not configured for this session[/red]")
             ui.print("")
             return COMMAND_HANDLED
 
         ui.print("[cyan]Available modes:[/cyan]")
-        for mode in self.available_modes:
-            if mode == self.current_mode:
+        for mode in self.service.modes_all:
+            if mode == self.service.mode_current:
                 ui.print(f"  {mode} [green](current)[/green]")
             else:
                 ui.print(f"  {mode}")

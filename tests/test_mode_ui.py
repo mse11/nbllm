@@ -35,7 +35,7 @@ def test_mode_ui_picker():
             show_banner=False,
         )
         
-        print(f"✓ Initial mode: {chat.current_mode}")
+        print(f"✓ Initial mode: {chat.service.mode_current}")
         
         # Test the mode command handler with mock choice
         with patch('nbllm.ui.choice') as mock_choice:

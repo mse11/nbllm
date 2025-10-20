@@ -36,20 +36,20 @@ def test_keyboard_shortcut():
             show_banner=False,
         )
         
-        print(f"✓ Initial mode: {chat.current_mode}")
-        print(f"✓ Available modes: {chat.get_available_modes()}")
-        
+        print(f"✓ Initial mode: {chat.service.mode_current}")
+        print(f"✓ Available modes: {chat.service.modes_all}")
+
         # Test switching to next mode
-        next_mode = chat.switch_to_next_mode()
-        print(f"✓ After first switch: {chat.current_mode} (returned: {next_mode})")
-        
+        next_mode = chat.service.llm_exec_switch()
+        print(f"✓ After first switch: {chat.service.mode_current} (returned: {next_mode})")
+
         # Test switching again (should cycle through all modes)
-        next_mode = chat.switch_to_next_mode()
-        print(f"✓ After second switch: {chat.current_mode} (returned: {next_mode})")
-        
+        next_mode = chat.service.llm_exec_switch()
+        print(f"✓ After second switch: {chat.service.mode_current} (returned: {next_mode})")
+
         # Test switching again (should cycle back to first)
-        next_mode = chat.switch_to_next_mode()
-        print(f"✓ After third switch: {chat.current_mode} (returned: {next_mode})")
+        next_mode = chat.service.llm_exec_switch()
+        print(f"✓ After third switch: {chat.service.mode_current} (returned: {next_mode})")
         
         # Test with single mode (should return None)
         single_mode_chat = Chat(
@@ -57,7 +57,7 @@ def test_keyboard_shortcut():
             cfg_modes=FactoryConfigModesToolsOnly([read_tool]),
             show_banner=False,
         )
-        result = single_mode_chat.switch_to_next_mode()
+        result = single_mode_chat.service.llm_exec_switch()
         print(f"✓ Single mode switch result: {result} (should be None)")
         
         print("✓ Keyboard shortcut functionality works correctly!")

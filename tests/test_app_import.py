@@ -48,10 +48,10 @@ def test_app_import():
         )
         
         print(f"✓ Chat instance created successfully")
-        print(f"✓ Initial mode: {chat.current_mode}")
-        print(f"✓ Available modes: {chat.get_available_modes()}")
-        print(f"✓ Mode switching enabled: {chat._is_modes_enabled()}")
-        print(f"✓ Can switch to next mode: {chat.switch_to_next_mode()}")
+        print(f"✓ Initial mode: {chat.service.mode_current}")
+        print(f"✓ Available modes: {chat.service.modes_enabled}")
+        print(f"✓ Mode switching enabled: {chat.service.modes_enabled}")
+        print(f"✓ Can switch to next mode: {chat.service.llm_exec_switch()}")
         
         print("✓ App.py configuration works correctly!")
 

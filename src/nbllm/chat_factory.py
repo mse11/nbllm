@@ -20,7 +20,7 @@ def FactoryConfigModesToolsOnly(
         tools: List[Any],  # todo types
 ):
     return ConfigModes(
-        initial_mode=None,
+        current_mode=None,
         modes_cfg=[
             ConfigMode(
                 mode="default",
@@ -34,7 +34,7 @@ def FactoryConfigModesDeveloper(
         mode_review_tools: List[Any]        # todo types
 ) -> ConfigModes:
     return ConfigModes(
-        initial_mode="development",
+        current_mode="development",
         modes_cfg=[
             ConfigMode(
                 mode="development",

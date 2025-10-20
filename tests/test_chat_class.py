@@ -29,9 +29,9 @@ def test_no_modes():
         )
         
         print("✓ Chat instance created successfully")
-        print(f"✓ Modes enabled: {chat._is_modes_enabled()}")  # Should be False
-        print(f"✓ Available modes: {chat.get_available_modes()}")  # Should be empty
-        print(f"✓ Current tools: {len(chat._get_current_tools())}")
+        print(f"✓ Modes enabled: {chat.service.modes_enabled}")  # Should be False
+        print(f"✓ Available modes: {chat.service.modes_all}")  # Should be empty
+        print(f"✓ Current tools: {len(chat.service.tools_current)}")
         
         # Test would run chat.run() here but that's interactive
     
@@ -61,7 +61,7 @@ def test_with_modes():
         chat = Chat(
             cfg_llm=FactoryConfigLlmDefault("any prompt"),
             cfg_modes=ConfigModes(
-                initial_mode="normal",
+                current_mode="normal",
                 modes_cfg=[
                     ConfigMode(
                         mode="plan",
@@ -85,22 +85,22 @@ def test_with_modes():
         )
         
         print("✓ Chat instance with modes created successfully")
-        print(f"✓ Modes enabled: {chat._is_modes_enabled()}")  # Should be True
-        print(f"✓ Current mode: {chat.current_mode}")  # Should be 'normal'
-        print(f"✓ Available modes: {chat.get_available_modes()}")
-        print(f"✓ Current tools: {[t.tool_name for t in chat._get_current_tools()]}")
+        print(f"✓ Modes enabled: {chat.service.modes_enabled}")  # Should be True
+        print(f"✓ Current mode: {chat.service.mode_current}")  # Should be 'normal'
+        print(f"✓ Available modes: {chat.service.modes_all}")
+        print(f"✓ Current tools: {[t.tool_name for t in chat.service.tools_current]}")
         
         # Test mode switching
         print("\nTesting mode switching...")
         success = chat.switch_mode("plan")
         print(f"✓ Switch to plan mode: {success}")
-        print(f"✓ Current mode: {chat.current_mode}")
-        print(f"✓ Current tools: {[t.tool_name for t in chat._get_current_tools()]}")
+        print(f"✓ Current mode: {chat.service.mode_current}")
+        print(f"✓ Current tools: {[t.tool_name for t in chat.service.tools_current]}")
         
         # Test switching to invalid mode
         success = chat.switch_mode("invalid_mode")
         print(f"✓ Switch to invalid mode (should fail): {success}")
-        print(f"✓ Current mode after failed switch: {chat.current_mode}")
+        print(f"✓ Current mode after failed switch: {chat.service.mode_current}")
 
 
 if __name__ == "__main__":
