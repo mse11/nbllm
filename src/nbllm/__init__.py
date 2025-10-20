@@ -5,6 +5,7 @@ import importlib.metadata
 from .__main__ import chat
 from .chat import  Chat
 from .chat_config import LlmConfig, ModeConfig, ModesConfig
+from .chat_factory import LlmConfigFactoryDefault, ModesConfigFactoryDeveloper, ModesConfigFactoryToolsOnly
 
 # Get version dynamically from package metadata
 try:
@@ -17,6 +18,7 @@ __all__ = [
     "Chat",
     "LlmConfig",
     "ModeConfig",
-    "ChatConfig",
+    "ModesConfigFactoryDeveloper",
+    "LlmConfigFactoryDefault",
     "__version__"
 ]

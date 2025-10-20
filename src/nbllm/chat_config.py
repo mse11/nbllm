@@ -1,7 +1,7 @@
 import os
 
 from dataclasses import dataclass, field
-from typing import List, Any
+from typing import List, Any, Union
 from pathlib import Path
 
 ##################################################################################
@@ -49,7 +49,7 @@ class ModeConfig:
 @dataclass
 class ModesConfig:
     """"""
-    initial_mode: str
+    initial_mode: Union[str, None] = None
     modes_cfg: List[ModeConfig] = field(default_factory=list)
 
     def __post_init__(self):

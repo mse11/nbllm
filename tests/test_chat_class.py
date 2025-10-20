@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from nbllm import Chat
+from nbllm import Chat, ModesConfigFactoryToolsOnly, LlmConfigFactoryDefault, ModesConfig, ModeConfig
 
 def test_no_modes():
     """Test Chat class without modes (backward compatibility)."""
@@ -22,7 +22,8 @@ def test_no_modes():
         mock_get_model.return_value = mock_model
         
         chat = Chat(
-            tools=tools,
+            cfg_llm=LlmConfigFactoryDefault("no prompt"),
+            cfg_modes=ModesConfigFactoryToolsOnly(tools),
             show_banner=False,
             first_message="Testing Chat class without modes. Type /quit to exit."
         )
@@ -48,19 +49,7 @@ def test_with_modes():
     write_tool.tool_name = "write"
     debug_tool = MagicMock()
     debug_tool.tool_name = "debug"
-    
-    tools = {
-        "normal": [read_tool, write_tool],
-        "plan": [read_tool],  # Read-only mode
-        "debug": [read_tool, write_tool, debug_tool]
-    }
-    
-    mode_switch_messages = {
-        "plan": "You are now in plan mode. You can read files but cannot write them.",
-        "normal": "You are now in normal mode with full capabilities.",
-        "debug": "You are now in debug mode with additional debugging tools."
-    }
-    
+
     with patch('llm.get_model') as mock_get_model:
         mock_model = MagicMock()
         mock_conversation = MagicMock()
@@ -70,9 +59,27 @@ def test_with_modes():
         mock_get_model.return_value = mock_model
         
         chat = Chat(
-            tools=tools,
-            mode_switch_messages=mode_switch_messages,
-            initial_mode="normal",
+            cfg_llm=LlmConfigFactoryDefault("any prompt"),
+            cfg_modes=ModesConfig(
+                initial_mode="normal",
+                modes_cfg=[
+                    ModeConfig(
+                        mode="plan",
+                        tools=[read_tool, write_tool],
+                        mode_switch_message="You are now in plan mode. You can read files but cannot write them."
+                    ),
+                    ModeConfig(
+                        mode="normal",
+                        tools=[read_tool],  # Read-only mode
+                        mode_switch_message="You are now in normal mode with full capabilities."
+                    ),
+                    ModeConfig(
+                        mode="debug",
+                        tools=[read_tool, write_tool, debug_tool],
+                        mode_switch_message="You are now in debug mode with additional debugging tools."
+                    ),
+                ]
+            ),
             show_banner=False,
             first_message="Testing Chat class with modes. Type /modes to see available modes, /quit to exit."
         )

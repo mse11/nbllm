@@ -14,14 +14,12 @@ def test_app_import():
     # Mock the tools that app.py imports
     with patch('nbllm.tools.FileTool') as mock_file_tool, \
          patch('nbllm.tools.TodoTools') as mock_todo_tools, \
-         patch('nbllm.prompts.marimo_prompt') as mock_prompt, \
          patch('llm.get_model') as mock_get_model:
         
         # Set up mocks
         mock_file_tool.return_value = MagicMock()
         mock_todo_tools.return_value = MagicMock()
-        mock_prompt = "Mock marimo prompt"
-        
+
         mock_model = MagicMock()
         mock_conversation = MagicMock()
         mock_conversation.responses = []
@@ -30,27 +28,19 @@ def test_app_import():
         mock_get_model.return_value = mock_model
         
         # Now try to create the Chat instance like app.py does
-        from nbllm import Chat
+        from nbllm import Chat, LlmConfigFactoryDefault, ModesConfigFactoryDeveloper
         
         # Define tools for different modes like in app.py
         file_tool = mock_file_tool("edit.py")
         todo_tools = mock_todo_tools()
         
         chat = Chat(
-            model_name="anthropic/claude-3-5-sonnet-20240620",
-            tools={
-                "development": [file_tool, todo_tools],
-                "review": [file_tool], 
-                "planning": [],
-            },
-            mode_switch_messages={
-                "development": "You are now in development mode. You can edit files and manage todos. Focus on implementing features and fixing bugs.",
-                "review": "You are now in review mode. You can read files to understand the codebase but cannot make changes. Focus on analyzing code and providing feedback.",
-                "planning": "You are now in planning mode. You cannot access files or tools. Focus on high-level discussion, architecture planning, and strategic thinking.",
-            },
-            system_prompt=mock_prompt,
+            cfg_llm=LlmConfigFactoryDefault(system_prompt="Mock marimo prompt"),
+            cfg_modes=ModesConfigFactoryDeveloper(
+                mode_development_tools=[file_tool, todo_tools],
+                mode_review_tools=[file_tool]
+            ),
             debug=True,
-            initial_mode="development",
             slash_commands={
                 "/thinking": "Let me think through this step by step:",
             },

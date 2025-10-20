@@ -6,7 +6,8 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from unittest.mock import patch, MagicMock
-from nbllm import Chat
+from nbllm import Chat, LlmConfigFactoryDefault, ModesConfigFactoryToolsOnly, ModesConfigFactoryDeveloper
+
 
 def test_keyboard_shortcut():
     """Test that the keyboard shortcut method works correctly."""
@@ -18,12 +19,6 @@ def test_keyboard_shortcut():
     write_tool = MagicMock()
     write_tool.tool_name = "write"
     
-    tools = {
-        "development": [read_tool, write_tool],
-        "review": [read_tool],
-        "planning": []
-    }
-    
     with patch('llm.get_model') as mock_get_model:
         mock_model = MagicMock()
         mock_conversation = MagicMock()
@@ -31,10 +26,13 @@ def test_keyboard_shortcut():
         mock_conversation.chain.return_value = iter([])
         mock_model.conversation.return_value = mock_conversation
         mock_get_model.return_value = mock_model
-        
+
         chat = Chat(
-            tools=tools,
-            initial_mode="development",
+            cfg_llm=LlmConfigFactoryDefault("no prompt"),
+            cfg_modes=ModesConfigFactoryDeveloper(
+                mode_development_tools=[read_tool, write_tool],
+                mode_review_tools=[read_tool]
+            ),
             show_banner=False,
         )
         
@@ -55,8 +53,8 @@ def test_keyboard_shortcut():
         
         # Test with single mode (should return None)
         single_mode_chat = Chat(
-            tools={"only": [read_tool]},
-            initial_mode="only",
+            cfg_llm=LlmConfigFactoryDefault("no prompt"),
+            cfg_modes=ModesConfigFactoryToolsOnly([read_tool]),
             show_banner=False,
         )
         result = single_mode_chat.switch_to_next_mode()

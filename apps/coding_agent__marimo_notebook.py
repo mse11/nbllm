@@ -1,11 +1,12 @@
 import srsly
 from pathlib import Path
 
-from nbllm import Chat, ModeConfig, LlmConfig, ModesConfig
+from nbllm import Chat, ModeConfig, LlmConfigFactoryDefault, ModesConfigFactoryDeveloper
 from nbllm.tools import FileTool, TodoTools
 from nbllm import ui
 
-marimo_system_prompt = '''# Marimo notebook assistant
+marimo_system_prompt = '''
+# Marimo notebook assistant
 
 You are a specialized AI assistant designed to help create data science notebooks using marimo. You focus on creating clear, efficient, and reproducible data analysis workflows with marimo's reactive programming model.
 
@@ -65,7 +66,8 @@ if __name__ == "__main__":
 </example>
 
 No matter what you do, you should always keep the cells around in a marimo file. This is not a normal Python file. Don't forget the @cell decorator.
-'''
+'''.strip()
+
 marimo_default_notebook_content = '''
 # /// script
 # requires-python = ">=3.11"
@@ -95,7 +97,7 @@ def _():
 
 if __name__ == "__main__":
     app.run()
-'''
+'''.strip()
 
 def set_role():
     """Set a role for the assistant"""
@@ -119,30 +121,10 @@ file_tool = FileTool("edit.py", marimo_default_notebook_content)
 todo_tools = TodoTools()
 
 Chat(
-    cfg_llm=LlmConfig(
-        system_prompt=marimo_system_prompt,
-        model_id="nbllm_model", # see template_llm__extra-openai-models.yaml
-        path_to_extra_openai_models="."
-    ),
-    cfg_modes=ModesConfig(
-        initial_mode="development",
-        modes_cfg=[
-            ModeConfig(
-                mode="development",
-                tools=[file_tool, todo_tools],  # Full development capabilities,
-                mode_switch_message="You are now in development mode. You can edit files and manage todos. Focus on implementing features and fixing bugs."
-            ),
-            ModeConfig(
-                mode="review",
-                tools=[file_tool],  # Code review mode - can read files but no todo management
-                mode_switch_message="You are now in review mode. You can read files to understand the codebase but cannot make changes. Focus on analyzing code and providing feedback."
-            ),
-            ModeConfig(
-                mode="planning",
-                tools=[],  # Planning mode - no tools, pure discussion
-                mode_switch_message="You are now in planning mode. You cannot access files or tools. Focus on high-level discussion, architecture planning, and strategic thinking."
-            ),
-        ]
+    cfg_llm=LlmConfigFactoryDefault(system_prompt=marimo_system_prompt),
+    cfg_modes=ModesConfigFactoryDeveloper(
+        mode_development_tools=[file_tool, todo_tools],
+        mode_review_tools=[file_tool]
     ),
     debug=True,
     slash_commands={
