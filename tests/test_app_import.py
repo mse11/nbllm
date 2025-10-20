@@ -28,15 +28,15 @@ def test_app_import():
         mock_get_model.return_value = mock_model
         
         # Now try to create the Chat instance like app.py does
-        from nbllm import Chat, LlmConfigFactoryDefault, ModesConfigFactoryDeveloper
+        from nbllm import Chat, FactoryConfigLlmDefault, FactoryConfigModesDeveloper
         
         # Define tools for different modes like in app.py
         file_tool = mock_file_tool("edit.py")
         todo_tools = mock_todo_tools()
         
         chat = Chat(
-            cfg_llm=LlmConfigFactoryDefault(system_prompt="Mock marimo prompt"),
-            cfg_modes=ModesConfigFactoryDeveloper(
+            cfg_llm=FactoryConfigLlmDefault(system_prompt="Mock marimo prompt"),
+            cfg_modes=FactoryConfigModesDeveloper(
                 mode_development_tools=[file_tool, todo_tools],
                 mode_review_tools=[file_tool]
             ),

@@ -4,8 +4,8 @@ import importlib.metadata
 
 from .__main__ import chat
 from .chat import  Chat
-from .chat_config import LlmConfig, ModeConfig, ModesConfig
-from .chat_factory import LlmConfigFactoryDefault, ModesConfigFactoryDeveloper, ModesConfigFactoryToolsOnly
+from .chat_config import ConfigLlm, ConfigMode, ConfigModes
+from .chat_factory import FactoryConfigLlmDefault, FactoryConfigModesDeveloper, FactoryConfigModesToolsOnly
 
 # Get version dynamically from package metadata
 try:
@@ -16,9 +16,9 @@ except:
 __all__ = [
     "chat",
     "Chat",
-    "LlmConfig",
-    "ModeConfig",
-    "ModesConfigFactoryDeveloper",
-    "LlmConfigFactoryDefault",
+    "ConfigLlm",
+    "ConfigMode",
+    "FactoryConfigModesDeveloper",
+    "FactoryConfigLlmDefault",
     "__version__"
 ]

@@ -1,7 +1,7 @@
 import srsly
 from pathlib import Path
 
-from nbllm import Chat, ModeConfig, LlmConfigFactoryDefault, ModesConfigFactoryDeveloper
+from nbllm import Chat, ConfigMode, FactoryConfigLlmDefault, FactoryConfigModesDeveloper
 from nbllm.tools import FileTool, TodoTools
 from nbllm import ui
 
@@ -121,8 +121,8 @@ file_tool = FileTool("edit.py", marimo_default_notebook_content)
 todo_tools = TodoTools()
 
 Chat(
-    cfg_llm=LlmConfigFactoryDefault(system_prompt=marimo_system_prompt),
-    cfg_modes=ModesConfigFactoryDeveloper(
+    cfg_llm=FactoryConfigLlmDefault(system_prompt=marimo_system_prompt),
+    cfg_modes=FactoryConfigModesDeveloper(
         mode_development_tools=[file_tool, todo_tools],
         mode_review_tools=[file_tool]
     ),

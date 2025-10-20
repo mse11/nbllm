@@ -10,7 +10,7 @@ from rich.text import Text
 
 from nbllm import config
 from nbllm import ui
-from nbllm.chat_config import LlmConfig, ModesConfig
+from nbllm.chat_config import ConfigLlm, ConfigModes
 
 # Command result constants
 COMMAND_QUIT = "QUIT"
@@ -121,8 +121,8 @@ class Chat:
 
     def __init__(
             self,
-            cfg_llm: LlmConfig,
-            cfg_modes: ModesConfig,
+            cfg_llm: ConfigLlm,
+            cfg_modes: ConfigModes,
             debug: bool = False,
             slash_commands: dict = None,
             history_callback: Optional[Callable] = None,

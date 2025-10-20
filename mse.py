@@ -48,7 +48,7 @@
 #
 # print(_doc_getter_click("llm.cli","cli"))
 
-from nbllm import LlmConfig
+from nbllm import ConfigLlm
 
-c = LlmConfig(system_prompt="ako")
+c = ConfigLlm(system_prompt="ako")
 c.ensure_config()

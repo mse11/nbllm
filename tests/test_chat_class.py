@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from nbllm import Chat, ModesConfigFactoryToolsOnly, LlmConfigFactoryDefault, ModesConfig, ModeConfig
+from nbllm import Chat, FactoryConfigModesToolsOnly, FactoryConfigLlmDefault, ConfigModes, ConfigMode
 
 def test_no_modes():
     """Test Chat class without modes (backward compatibility)."""
@@ -22,8 +22,8 @@ def test_no_modes():
         mock_get_model.return_value = mock_model
         
         chat = Chat(
-            cfg_llm=LlmConfigFactoryDefault("no prompt"),
-            cfg_modes=ModesConfigFactoryToolsOnly(tools),
+            cfg_llm=FactoryConfigLlmDefault("no prompt"),
+            cfg_modes=FactoryConfigModesToolsOnly(tools),
             show_banner=False,
             first_message="Testing Chat class without modes. Type /quit to exit."
         )
@@ -59,21 +59,21 @@ def test_with_modes():
         mock_get_model.return_value = mock_model
         
         chat = Chat(
-            cfg_llm=LlmConfigFactoryDefault("any prompt"),
-            cfg_modes=ModesConfig(
+            cfg_llm=FactoryConfigLlmDefault("any prompt"),
+            cfg_modes=ConfigModes(
                 initial_mode="normal",
                 modes_cfg=[
-                    ModeConfig(
+                    ConfigMode(
                         mode="plan",
                         tools=[read_tool, write_tool],
                         mode_switch_message="You are now in plan mode. You can read files but cannot write them."
                     ),
-                    ModeConfig(
+                    ConfigMode(
                         mode="normal",
                         tools=[read_tool],  # Read-only mode
                         mode_switch_message="You are now in normal mode with full capabilities."
                     ),
-                    ModeConfig(
+                    ConfigMode(
                         mode="debug",
                         tools=[read_tool, write_tool, debug_tool],
                         mode_switch_message="You are now in debug mode with additional debugging tools."

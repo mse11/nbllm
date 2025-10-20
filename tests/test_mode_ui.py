@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from unittest.mock import patch, MagicMock
-from nbllm import Chat, ModesConfigFactoryDeveloper, LlmConfigFactoryDefault
+from nbllm import Chat, FactoryConfigModesDeveloper, FactoryConfigLlmDefault
 
 def test_mode_ui_picker():
     """Test that the mode picker UI works correctly."""
@@ -27,8 +27,8 @@ def test_mode_ui_picker():
         mock_get_model.return_value = mock_model
         
         chat = Chat(
-            cfg_llm=LlmConfigFactoryDefault("no prompt"),
-            cfg_modes=ModesConfigFactoryDeveloper(
+            cfg_llm=FactoryConfigLlmDefault("no prompt"),
+            cfg_modes=FactoryConfigModesDeveloper(
                 mode_development_tools=[read_tool, write_tool],
                 mode_review_tools=[read_tool]
             ),

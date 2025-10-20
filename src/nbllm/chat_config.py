@@ -8,7 +8,7 @@ from pathlib import Path
 ################################ LLM #############################################
 ##################################################################################
 @dataclass
-class LlmConfig:
+class ConfigLlm:
     system_prompt: str
     model_id: str = "nbllm_model"            # 'extra-openai-models.yaml' is use by 'llm'
     path_to_extra_openai_models: str = None  # 'extra-openai-models.yaml' is use by 'llm'
@@ -39,7 +39,7 @@ class LlmConfig:
 ################################ MODES ###########################################
 ##################################################################################
 @dataclass
-class ModeConfig:
+class ConfigMode:
     """Configuration for a single mode with associated tools and mode switch message"""
     mode: str
     tools: List[Any] = field(default_factory=list) # Todo type
@@ -47,10 +47,10 @@ class ModeConfig:
 
 
 @dataclass
-class ModesConfig:
+class ConfigModes:
     """"""
     initial_mode: Union[str, None] = None
-    modes_cfg: List[ModeConfig] = field(default_factory=list)
+    modes_cfg: List[ConfigMode] = field(default_factory=list)
 
     def __post_init__(self):
         # Ensure all mode names are unique
