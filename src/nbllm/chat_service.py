@@ -81,6 +81,11 @@ class LlmService:
         return self.cfg_modes.tools_by_mode.get(self.mode_current, [])
 
     @property
+    def tools_current_to_names(self):
+        """Get tools names for current mode."""
+        return [ getattr(t, 'tool_name', type(t).__name__)  for t in self.tools_current ]
+
+    @property
     def llm_history(self):
         return [msg.response_json for msg in self.llm_conversation.responses]
 

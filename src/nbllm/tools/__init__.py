@@ -4,6 +4,7 @@ from .filesystem import FileSystem, FileTool
 from .todo import TodoTools
 from .webfetch import WebFetchTool
 from ..not_installed import NotInstalled
+from .command import GitTool, NpmTool, PythonTool
 
 try:
     from .playwright_browser import PlaywrightTool
@@ -13,4 +14,4 @@ except ImportError:
 
 
 
-__all__ = ["FileSystem", "FileTool", "TodoTools", "WebFetchTool", "PlaywrightTool"]
+__all__ = ["FileSystem", "FileTool", "TodoTools", "WebFetchTool", "PlaywrightTool", "GitTool", "NpmTool", "PythonTool"]

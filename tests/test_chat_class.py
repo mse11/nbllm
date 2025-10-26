@@ -88,14 +88,14 @@ def test_with_modes():
         print(f"✓ Modes enabled: {chat.service.modes_enabled}")  # Should be True
         print(f"✓ Current mode: {chat.service.mode_current}")  # Should be 'normal'
         print(f"✓ Available modes: {chat.service.modes_all}")
-        print(f"✓ Current tools: {[t.tool_name for t in chat.service.tools_current]}")
+        print(f"✓ Current tools: {chat.service.tools_current_to_names}")
         
         # Test mode switching
         print("\nTesting mode switching...")
         success = chat.switch_mode("plan")
         print(f"✓ Switch to plan mode: {success}")
         print(f"✓ Current mode: {chat.service.mode_current}")
-        print(f"✓ Current tools: {[t.tool_name for t in chat.service.tools_current]}")
+        print(f"✓ Current tools: {chat.service.tools_current_to_names}")
         
         # Test switching to invalid mode
         success = chat.switch_mode("invalid_mode")

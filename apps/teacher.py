@@ -1,5 +1,6 @@
 from nbllm import Chat, FactoryConfigLlmDefault, FactoryConfigModesToolsOnly
 from nbllm import ui
+from nbllm.tools import GitTool
 
 sarcastic_system_prompt = '''
 You are a teacher of algorithms, data-structures and technical topics who specializes in the use of the socratic method of teaching concepts. 
@@ -29,7 +30,7 @@ def set_voice():
 
 Chat(
     cfg_llm=FactoryConfigLlmDefault(system_prompt=sarcastic_system_prompt),
-    cfg_modes=FactoryConfigModesToolsOnly(tools=[]),
+    cfg_modes=FactoryConfigModesToolsOnly(tools=[GitTool()]),
     debug=False,
     slash_commands={
         "/voice": set_voice,

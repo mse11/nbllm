@@ -346,16 +346,14 @@ class Chat:
 
     def _handle_tools(self):
         """Handle /tools command with mode awareness."""
-        current_tools = self.service.tools
-
         if self.service.modes_enabled:
             ui.print(f"[cyan]Available tools in {self.service.mode_current} mode:[/cyan]")
         else:
             ui.print("[cyan]Available tools:[/cyan]")
 
-        if current_tools:
-            for tool in current_tools:
-                tool_name = getattr(tool, 'tool_name', type(tool).__name__)
+        current_tools_names = self.service.tools_current_to_names
+        if len(current_tools_names):
+            for tool_name in current_tools_names:
                 ui.print(f"  {tool_name}")
         else:
             ui.print("[dim]No tools configured[/dim]")
