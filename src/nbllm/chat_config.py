@@ -11,12 +11,12 @@ from pathlib import Path
 class ConfigLlm:
     system_prompt: str
     model_id: str = "nbllm_model"            # 'extra-openai-models.yaml' is use by 'llm'
-    path_to_extra_openai_models: str = None  # 'extra-openai-models.yaml' is use by 'llm'
+    path_to_llm_cfg_dir: str = None  # 'extra-openai-models.yaml' is use by 'llm'
 
     def __post_init__(self):
         # export 'llm' config for compatibility with OpenAI API
 
-        if self.path_to_extra_openai_models is None:
+        if self.path_to_llm_cfg_dir is None:
             return
 
         file_content = """
@@ -27,13 +27,13 @@ class ConfigLlm:
   supports_tools: true
 """.strip()
 
-        file_path = Path(self.path_to_extra_openai_models) / "extra-openai-models.yaml"
+        file_path = Path(self.path_to_llm_cfg_dir) / "extra-openai-models.yaml"
         if not file_path.exists():
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.write_text(file_content)
 
         # export path for 'llm' tool
-        os.environ['LLM_USER_PATH'] = self.path_to_extra_openai_models
+        os.environ['LLM_USER_PATH'] = self.path_to_llm_cfg_dir
 
 ##################################################################################
 ################################ MODES ###########################################

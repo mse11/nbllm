@@ -9,7 +9,7 @@ def FactoryConfigLlmDefault(system_prompt: str) -> ConfigLlm:
     return ConfigLlm(
         system_prompt=system_prompt,
         model_id="nbllm_model", # see template_llm__extra-openai-models.yaml
-        path_to_extra_openai_models="."
+        path_to_llm_cfg_dir="./.llm_config"
     )
 
 ##################################################################################
