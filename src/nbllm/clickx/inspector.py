@@ -1,8 +1,16 @@
 import json
+import importlib
+
 from typing import Union
 from click.testing import CliRunner
 
 class ClickInspector:
+
+    @staticmethod
+    def import_from_string(module_import_path, module_global_attribute = None):
+        # import_from_string("llm.cli","cli")) IS EQUIVALENT 'from llm.cli import cli'
+        module = importlib.import_module(module_import_path)
+        return  getattr(module, module_global_attribute) if module_global_attribute else module
 
     @staticmethod
     def _safe_serialize(value):
