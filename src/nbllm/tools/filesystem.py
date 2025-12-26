@@ -14,7 +14,7 @@ from .. import ui
 class FileSystem(llm.Toolbox):
     """File system operations toolbox - can work with multiple files and directories."""
     
-    def __init__(self, working_directory: str = "."):
+    def __init__(self, working_directory: str = ".") -> None:
         self.working_directory = Path(working_directory).resolve()
     
     def _debug_return(self, value: str) -> str:
@@ -136,7 +136,7 @@ class FileSystem(llm.Toolbox):
             return self._debug_return(f"No changes needed in '{file_path}'")
 
 
-def FileTool(file_path: Optional[str] = None, file_content : str = None):
+def FileTool(file_path: Optional[str] = None, file_content : Optional[str] = None) -> llm.Toolbox:
     """Factory function to create a FileTool with file-specific docstring."""
     if file_path is None:
         file_path = ui.input("Enter the path to the file you want to edit: ")
@@ -152,7 +152,7 @@ def FileTool(file_path: Optional[str] = None, file_content : str = None):
     class _FileTool(llm.Toolbox):
         f"""Single file editing toolbox - focused on editing {file_path_obj.name}. This tool cannot be used to open or edit other files."""
         
-        def __init__(self):
+        def __init__(self) -> None:
             self.file_path = file_path_obj
         
         def _debug_return(self, value: str) -> str:

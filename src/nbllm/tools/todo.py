@@ -10,7 +10,7 @@ from .. import config
 class TodoTools(llm.Toolbox):
     """Todo management toolbox."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._todos: List[Dict[str, Any]] = []
     
     def _debug_return(self, value: str) -> str:

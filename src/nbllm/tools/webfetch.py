@@ -12,7 +12,7 @@ from .. import config
 class WebFetchTool(llm.Toolbox):
     """Tool for fetching and converting web content to markdown."""
     
-    def __init__(self, timeout: int = 30):
+    def __init__(self, timeout: int = 30) -> None:
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers.update({

@@ -77,7 +77,7 @@ def run_command(command: str, working_directory: Optional[str] = ".", timeout: i
 class GitTool(llm.Toolbox):
     """Git command execution tool - safe git operations only."""
     
-    def __init__(self, auto_trust: bool = False):
+    def __init__(self, auto_trust: bool = False) -> None:
         self.tool_name = "GitTool"
         if auto_trust:
             ui.trust_tool(self.tool_name)
@@ -143,7 +143,7 @@ class GitTool(llm.Toolbox):
 class NpmTool(llm.Toolbox):
     """NPM command execution tool - safe npm operations only."""
     
-    def __init__(self, auto_trust: bool = False):
+    def __init__(self, auto_trust: bool = False) -> None:
         self.tool_name = "NpmTool"
         if auto_trust:
             ui.trust_tool(self.tool_name)
@@ -210,7 +210,7 @@ class NpmTool(llm.Toolbox):
 class PythonTool(llm.Toolbox):
     """Python command execution tool - safe python operations only."""
     
-    def __init__(self, auto_trust: bool = False, uv: bool = True):
+    def __init__(self, auto_trust: bool = False, uv: bool = True) -> None:
         self.tool_name = "PythonTool"
         self.use_uv = uv
         if auto_trust:

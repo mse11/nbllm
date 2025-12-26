@@ -1,5 +1,6 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Dict, List, Any, Tuple
 import uuid
+import llm
 
 from rich.console import Console
 from rich.spinner import Spinner
@@ -17,12 +18,12 @@ COMMAND_QUIT = "QUIT"
 COMMAND_HANDLED = "HANDLED"
 
 
-def handle_quit():
+def handle_quit() -> str:
     """Handle /quit command"""
     return COMMAND_QUIT
 
 
-def handle_help(user_commands):
+def handle_help(user_commands: Dict[str, Any]) -> str:
     """Handle /help command"""
     ui.print("[cyan]Built-in commands:[/cyan]")
     ui.print("  /quit   - Exit the application")
@@ -45,7 +46,7 @@ def handle_help(user_commands):
     return COMMAND_HANDLED
 
 
-def handle_tools(tools):
+def handle_tools(tools: List[Any]) -> str:
     """Handle /tools command"""
     if tools:
         ui.print("[cyan]Available tools:[/cyan]")
@@ -58,7 +59,7 @@ def handle_tools(tools):
     return COMMAND_HANDLED
 
 
-def toggle_debug():
+def toggle_debug() -> str:
     """Toggle debug mode on/off"""
     config.DEBUG_MODE = not config.DEBUG_MODE
     status = "enabled" if config.DEBUG_MODE else "disabled"
@@ -67,7 +68,7 @@ def toggle_debug():
     return COMMAND_HANDLED
 
 
-def handle_user_command(command, handler):
+def handle_user_command(command: str, handler: Any) -> str:
     """Handle user-defined command"""
     try:
         if callable(handler):
@@ -97,7 +98,7 @@ def handle_user_command(command, handler):
         return COMMAND_HANDLED
 
 
-def dispatch_slash_command(command, user_commands, model, tools, conversation):
+def dispatch_slash_command(command: str, user_commands: Dict[str, Any], model: Any, tools: List[Any], conversation: Any) -> Tuple[str, Any]:
     """Dispatch slash command to appropriate handler"""
     if command == "/quit":
         return handle_quit(), conversation
@@ -124,7 +125,7 @@ class Chat:
             cfg_llm: ConfigLlm,
             cfg_modes: ConfigModes,
             debug: bool = False,
-            slash_commands: dict = None,
+            slash_commands: Optional[Dict[str, Any]] = None,
             history_callback: Optional[Callable] = None,
             first_message: Optional[str] = None,
             show_banner: bool = True,
@@ -148,7 +149,7 @@ class Chat:
         self.first_message = first_message
         self.show_banner = show_banner
 
-    def switch_mode(self, new_mode: str):
+    def switch_mode(self, new_mode: str) -> bool:
         """Switch to a different mode."""
         if not self.service.modes_enabled:
             ui.print("[red]Modes are not configured for this session[/red]")
@@ -170,7 +171,7 @@ class Chat:
         ui.print("")
         return True
 
-    def run(self):
+    def run(self) -> None:
         """Main chat loop."""
         # Set debug mode globally
         config.DEBUG_MODE = self.debug
@@ -293,9 +294,9 @@ class Chat:
             ui.print("[cyan]Thanks for using nbllm. Goodbye![/cyan]")
             ui.print("")  # Add final newline
 
-    def _dispatch_slash_command(self, command, args, user_commands):
+    def _dispatch_slash_command(self, command: str, args: str, user_commands: Dict[str, Any]) -> Tuple[str, llm.Conversation]:
         """Dispatch slash command to appropriate handler."""
-        conversation = self.service.llm_conversation
+        conversation: llm.Conversation = self.service.llm_conversation
         if command == "/quit":
             return handle_quit(), conversation
         elif command == "/help":
@@ -316,7 +317,7 @@ class Chat:
             ui.print("")
             return COMMAND_HANDLED, conversation
 
-    def _handle_help(self, user_commands):
+    def _handle_help(self, user_commands: Dict[str, Any]) -> str:
         """Handle /help command with mode awareness."""
         ui.print("[cyan]Built-in commands:[/cyan]")
         ui.print("  /quit   - Exit the application")
@@ -344,7 +345,7 @@ class Chat:
         ui.print("")
         return COMMAND_HANDLED
 
-    def _handle_tools(self):
+    def _handle_tools(self) -> str:
         """Handle /tools command with mode awareness."""
         if self.service.modes_enabled:
             ui.print(f"[cyan]Available tools in {self.service.mode_current} mode:[/cyan]")
@@ -360,7 +361,7 @@ class Chat:
         ui.print("")
         return COMMAND_HANDLED
 
-    def _handle_mode_command(self, args=""):
+    def _handle_mode_command(self, args: str = "") -> str:
         """Handle /mode command."""
         if not self.service.modes_enabled:
             ui.print("[red]Modes are not configured for this session[/red]")
@@ -397,7 +398,7 @@ class Chat:
         self.switch_mode(target_mode)
         return COMMAND_HANDLED
 
-    def _handle_modes_command(self):
+    def _handle_modes_command(self) -> str:
         """Handle /modes command."""
         if not self.service.modes_enabled:
             ui.print("[red]Modes are not configured for this session[/red]")

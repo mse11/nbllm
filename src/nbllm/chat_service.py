@@ -17,29 +17,29 @@ class LlmService:
     llm_conversation: Optional[llm.Conversation] = field(default=None)
     llm_history_backup: Optional[List[ Dict[str, Any] ]] = field(default=None)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.llm_exec_init()
 
     ### modes
     @property
-    def modes_all(self):
+    def modes_all(self) -> List[str]:
         """Get all modes"""
         return self.cfg_modes.all_modes
 
     @property
-    def modes_enabled(self):
+    def modes_enabled(self) -> bool:
         """Get all modes"""
         return True if len(self.cfg_modes.all_modes) else False
 
     ### mode
     @property
-    def mode_current(self):
+    def mode_current(self) -> str:
         """Get current mode."""
         mode = self.cfg_modes.current_mode
         return "default" if None is mode else mode
 
     @mode_current.setter
-    def mode_current(self, value):
+    def mode_current(self, value: str) -> None:
         """Set current mode."""
         self.cfg_modes.current_mode = value
 
@@ -60,39 +60,39 @@ class LlmService:
         return old_mode, next_mode
 
     @property
-    def mode_switch_message(self):
+    def mode_switch_message(self) -> Optional[str]:
         """Get tools for current mode."""
         return self.cfg_modes.mode_switch_messages_by_mode.get(self.mode_current, None)
 
     #### llm
     @property
-    def model_id(self):
+    def model_id(self) -> str:
         """Get model id"""
         return self.cfg_llm.model_id
 
     @property
-    def system_prompt(self):
+    def system_prompt(self) -> str:
         """Get system prompt"""
         return self.cfg_llm.system_prompt
 
     @property
-    def tools_current(self):
+    def tools_current(self) -> List[Any]:
         """Get tools for current mode."""
         return self.cfg_modes.tools_by_mode.get(self.mode_current, [])
 
     @property
-    def tools_current_to_names(self):
+    def tools_current_to_names(self) -> List[str]:
         """Get tools names for current mode."""
         return [ getattr(t, 'tool_name', type(t).__name__)  for t in self.tools_current ]
 
     @property
-    def llm_history(self):
+    def llm_history(self) -> List[Dict[str, Any]]:
         return [msg.response_json for msg in self.llm_conversation.responses]
 
-    def llm_history_store(self):
+    def llm_history_store(self) -> None:
         self.llm_history_backup = self.llm_history
 
-    def llm_history_restore(self):
+    def llm_history_restore(self) -> None:
         # Replay conversation history
         for msg in self.llm_history_backup:
             if msg.get("role") == "user":
@@ -105,7 +105,7 @@ class LlmService:
 
         self.llm_history_backup = None
 
-    def llm_exec_init(self):
+    def llm_exec_init(self) -> None:
         """Initialize the LLM model and conversation."""
         try:
             self.llm_model = llm.get_model(self.model_id)

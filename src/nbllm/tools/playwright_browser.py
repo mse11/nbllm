@@ -14,14 +14,14 @@ class PlaywrightTool(llm.Toolbox):
         pip install nbllm[browser]
     """
     
-    def __init__(self, headless: bool = False, browser_type: str = "chromium"):
+    def __init__(self, headless: bool = False, browser_type: str = "chromium") -> None:
         self.headless = headless
         self.browser_type = browser_type
         self._playwright = None
         self._browser: Optional[Browser] = None
         self._page: Optional[Page] = None
     
-    def _ensure_browser(self):
+    def _ensure_browser(self) -> None:
         """Ensure browser is started."""
         if self._playwright is None:
             self._playwright = sync_playwright().start()
@@ -204,7 +204,7 @@ class PlaywrightTool(llm.Toolbox):
             config.tool_error(error_msg)
             return self._debug_return(f"Error: {error_msg}")
     
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup on deletion."""
         if self._browser:
             self.close()

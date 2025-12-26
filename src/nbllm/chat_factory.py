@@ -18,7 +18,7 @@ def FactoryConfigLlmDefault(system_prompt: str) -> ConfigLlm:
 
 def FactoryConfigModesToolsOnly(
         tools: List[Any],  # todo types
-):
+) -> ConfigModes:
     return ConfigModes(
         current_mode=None,
         modes_cfg=[
